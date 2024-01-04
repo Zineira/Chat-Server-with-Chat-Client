@@ -1,0 +1,2 @@
+/nick a
+/join o
