@@ -152,6 +152,9 @@ public class ChatServer {
     String message = decoder.decode(buffer).toString();
     String[] splited2 = message.split("\n");
     String[] splited = splited2[0].split(" ");
+    // for (int i = splited.length - 1; i < splited.length; i++) {
+    splited[splited.length - 1] = splited[splited.length - 1].substring(0, splited[splited.length - 1].length() - 1);
+    // }
     buffer.clear();
     /*
      * System.out.println(client.getUser());
@@ -159,7 +162,9 @@ public class ChatServer {
      * System.out.println(splited[0]);
      * System.out.println();
      */
-    switch (client.getState()) {
+    switch (client.getState())
+
+    {
 
       case ("init"):
 
@@ -245,31 +250,42 @@ public class ChatServer {
 
             break;
           case ("/priv"):
-            String str = "";
-            Boolean found = false;
-            for (int i = 2; i < splited.length; i++) {
-              System.out.println(str);
-              str.concat(splited[i]);
-            }
-            for (Clients user : clients) {
-              System.out.println(user.getUser() + "Entrei");
-              if (user.getUser().equals(splited[1])) {
-                System.out.println("entrei");
-                found = true;
+            if (splited.length > 2) {
 
-                buffer.clear();
-                buffer.put(charset.encode("PRIVATE " + client.getUser() + str + "\n"));
-                buffer.flip();
-                bufferWrite(user);
+              String str = splited[2];
+              String name = splited[1];
+              String sender = client.getUser();
+              Boolean found = false;
 
-                break;
+              for (int i = 3; i < splited.length; i++) {
+                str = str + " " + splited[i];
               }
-            }
-            if (found) {
-              buffer.clear();
-              buffer.put(charset.encode("OK\n"));
-              buffer.flip();
-              bufferWrite(client);
+
+              for (Clients user : clients) {
+                String username = user.getUser();
+                if (username.equals(name)) {
+                  found = true;
+
+                  buffer.clear();
+                  buffer.put(charset.encode("PRIVATE " + sender + " " + str + "\n"));
+                  buffer.flip();
+                  bufferWrite(user);
+
+                  break;
+                }
+              }
+
+              if (found) {
+                buffer.clear();
+                buffer.put(charset.encode("OK\n"));
+                buffer.flip();
+                bufferWrite(client);
+              } else {
+                buffer.clear();
+                buffer.put(charset.encode("ERROR\n"));
+                buffer.flip();
+                bufferWrite(client);
+              }
             } else {
               buffer.clear();
               buffer.put(charset.encode("ERROR\n"));
@@ -362,6 +378,51 @@ public class ChatServer {
             }
 
             break;
+          case ("/priv"):
+            if (splited.length > 2) {
+
+              String str = splited[2];
+              String name = splited[1];
+              String sender = client.getUser();
+              Boolean found = false;
+
+              for (int i = 3; i < splited.length; i++) {
+                str = str + " " + splited[i];
+              }
+
+              for (Clients user : clients) {
+                String username = user.getUser();
+                if (username.equals(name)) {
+                  found = true;
+
+                  buffer.clear();
+                  buffer.put(charset.encode("PRIVATE " + sender + " " + str + "\n"));
+                  buffer.flip();
+                  bufferWrite(user);
+
+                  break;
+                }
+              }
+
+              if (found) {
+                buffer.clear();
+                buffer.put(charset.encode("OK\n"));
+                buffer.flip();
+                bufferWrite(client);
+              } else {
+                buffer.clear();
+                buffer.put(charset.encode("ERROR\n"));
+                buffer.flip();
+                bufferWrite(client);
+              }
+            } else {
+              buffer.clear();
+              buffer.put(charset.encode("ERROR\n"));
+              buffer.flip();
+              bufferWrite(client);
+            }
+            break;
+
           case ("/join"):
             chat.removeUser(client);
             Chat newchat = null;
@@ -441,16 +502,14 @@ public class ChatServer {
           default:
 
             for (Clients user : users) {
-              if (!user.getUser().equals(client.getUser())) {
-                String name = client.getUser();
-                System.out.println("->" + name);
-                String textmsg = "MESSAGE " + name + " " + message + "\n";
-                System.out.println(textmsg);
-                buffer.clear();
-                buffer.put(charset.encode(textmsg));
-                buffer.flip();
-                bufferWrite(user);
-              }
+              String name = client.getUser();
+              System.out.println("->" + name);
+              String textmsg = "MESSAGE " + name + " " + message + "\n";
+              System.out.println(textmsg);
+              buffer.clear();
+              buffer.put(charset.encode(textmsg));
+              buffer.flip();
+              bufferWrite(user);
             }
             break;
         }
