@@ -77,7 +77,7 @@ public class ChatServer {
             Clients client = new Clients(s.getChannel());
             clients.add(client);
 
-          } else if (key.isReadable()) {  
+          } else if (key.isReadable()) {
 
             SocketChannel sc = null;
 
@@ -138,11 +138,11 @@ public class ChatServer {
   static private boolean processInput(Clients client) throws IOException {
     // Read the message to the buffer
 
-    System.out.println("ola");
-
     buffer.clear();
     client.getSC().read(buffer);
     buffer.flip();
+
+    // bufferWrite(client);
 
     // If no data, close the connection
     if (buffer.limit() == 0) {
@@ -150,26 +150,18 @@ public class ChatServer {
     }
 
     String message = decoder.decode(buffer).toString();
-
-    if(message.charAt(message.length() - 1) != '\n'){
-      client.setMsg(client.getMsg() + message);
-      return true;
-    } else {
-      message = client.getMsg() + message;
-      client.setMsg("");
-    }
-
     String[] splited2 = message.split("\n");
-    
-    for(int p = 0; p < splited2.length; p++){
-        String[] splited = splited2[p].split(" ");
-    
-      if(p == splited2.length - 1){
-        splited[splited.length - 1] = splited[splited.length - 1].substring(0, splited[splited.length - 1].length() - 1);
-      }
-    
+    String[] splited = splited2[0].split(" ");
+    // for (int i = splited.length - 1; i < splited.length; i++) {
+    splited[splited.length - 1] = splited[splited.length - 1].substring(0, splited[splited.length - 1].length() - 1);
+    // }
     buffer.clear();
-   
+    /*
+     * System.out.println(client.getUser());
+     * System.out.println(client.getState());
+     * System.out.println(splited[0]);
+     * System.out.println();
+     */
     switch (client.getState())
 
     {
@@ -181,6 +173,7 @@ public class ChatServer {
           case ("/nick"):
 
             if (!nicks.contains(splited[1])) {
+
               nicks.add(splited[1]);
               client.setUser(splited[1]);
               client.setState("outside");
@@ -305,6 +298,7 @@ public class ChatServer {
             Chat chat = null;
             int numChats = chats.size();
             for (int i = 0; i < numChats; i++) {
+              System.out.println(chats.get(i).getName() + " = " + splited[1]);
               if (chats.get(i).getName().equals(splited[1])) {
                 chat = chats.get(i);
               }
@@ -325,7 +319,6 @@ public class ChatServer {
               }
               chat.addUser(client);
             }
-            
             client.setChat(splited[1]);
             client.setState("inside");
             buffer.clear();
@@ -508,22 +501,11 @@ public class ChatServer {
             break;
           default:
 
-            if(splited2[p].charAt(0) == '/'){
-              if(splited2[p].charAt(1) == '/'){
-                splited2[p] = splited2[p].substring(1, splited2[p].length());
-              } else {
-                buffer.clear();
-                buffer.put(charset.encode("ERROR\n"));
-                buffer.flip();
-                bufferWrite(client);
-                break;
-              }
-            }
-
             for (Clients user : users) {
               String name = client.getUser();
-              String textmsg = "MESSAGE " + name + " " + splited2[p] + "\n";
-              
+              System.out.println("->" + name);
+              String textmsg = "MESSAGE " + name + " " + message + "\n";
+              System.out.println(textmsg);
               buffer.clear();
               buffer.put(charset.encode(textmsg));
               buffer.flip();
@@ -533,8 +515,28 @@ public class ChatServer {
         }
         break;
     }
+
+    /*
+     * for(SocketChannel client : clients){
+     * if(!(sc.equals(client))){
+     * buffer.clear();
+     * buffer.put(charset.encode("Client:" + sc.socket().getRemoteSocketAddress() +
+     * " Message:" + message));
+     * buffer.flip();
+     * while(buffer.hasRemaining()){
+     * try{
+     * client.write(buffer);
+     * } catch (IOException e){
+     * client.close();
+     * clients.remove(client);
+     * }
+     * }
+     * 
+     * 
+     * sc.write( buffer );}
+     * }
+     */
     buffer.flip();
-    }
 
     return true;
 

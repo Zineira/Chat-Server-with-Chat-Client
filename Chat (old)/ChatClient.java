@@ -1,9 +1,6 @@
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
+import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -20,13 +17,12 @@ public class ChatClient {
     // Se for necessário adicionar variáveis ao objecto ChatClient, devem
     // ser colocadas aqui
 
-    static private final Charset charset = Charset.forName("UTF8");
-    static private final CharsetDecoder decoder = charset.newDecoder();
-    static private final ByteBuffer bufferIn = ByteBuffer.allocate(16384);
-    static private final ByteBuffer bufferOut = ByteBuffer.allocate(16384);
-    static private Socket serverSocket = null;
-    static private SocketChannel sc = null;
+    public String nick = "";
+    public String chatroom = "";
+    public String state = "init";
 
+
+    
     // Método a usar para acrescentar uma string à caixa de texto
     // * NÃO MODIFICAR *
     public void printMessage(final String message) {
@@ -69,9 +65,9 @@ public class ChatClient {
 
         // Se for necessário adicionar código de inicialização ao
         // construtor, deve ser colocado aqui
-        serverSocket = new Socket(server, port);
-        sc = serverSocket.getChannel();
-        sc.configureBlocking(false);
+
+
+
     }
 
 
@@ -79,34 +75,47 @@ public class ChatClient {
     // na caixa de entrada
     public void newMessage(String message) throws IOException {
         // PREENCHER AQUI com código que envia a mensagem ao servidor
-        message = message + "\n";
-        bufferOut.clear();
-        bufferOut.put(charset.encode(message));
-        bufferWrite();
-        printMessage(message);
-    }
 
-    public static void bufferWrite() throws IOException {
+        String[] splited = message.split(" ");
+        
+        switch (splited [0]) {
 
-        while (bufferOut.hasRemaining()) {
-    
-          sc.write(bufferOut);
-    
+            case ("/nick"):
+                
+                nick = splited [1];
+                break;
+
+            case ("/join"):
+                
+                chatroom = splited [1];
+                break;
+
+            case ("/leave"):
+
+
+                break;
+
+            case ("/bye"):
+
+
+                break;
+
+            default:
+
+
+                break;
         }
-      }
+
+
+    }
 
     
     // Método principal do objecto
     public void run() throws IOException {
-        bufferIn.clear();
-        while(true){
-            while(bufferIn.hasRemaining()){
-                sc.read(bufferIn);
-                String response = decoder.decode(bufferIn).toString();
-                bufferIn.clear();
-                printMessage(response + "\n");
-            }
-        }
+        
+
+
+
     }
     
 

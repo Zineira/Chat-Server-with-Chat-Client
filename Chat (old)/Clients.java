@@ -1,4 +1,9 @@
+import java.io.*;
+import java.net.*;
+import java.nio.*;
 import java.nio.channels.*;
+import java.nio.charset.*;
+import java.util.*;
 
 public class Clients {
 
@@ -6,21 +11,11 @@ public class Clients {
     private SocketChannel sc;
     private String state;
     private String chat;
-    private String curmsg;
 
     public Clients(SocketChannel sc) {
         this.sc = sc;
         state = "init";
         chat = "";
-        curmsg = "";
-    }
-
-    public void setMsg(String msg){
-        this.curmsg = msg;
-    }
-
-    public String getMsg(){
-        return curmsg;
     }
 
     public void setUser(String user) {

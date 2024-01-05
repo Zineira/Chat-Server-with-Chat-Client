@@ -1,2 +1,7 @@
-/nick a
+/nick alalal
 /join o
+ola
+/nick bot
+adeus
+/join k
+agora estou aqui :)
