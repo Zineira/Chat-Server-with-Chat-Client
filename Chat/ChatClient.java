@@ -6,8 +6,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
 
+import javax.sound.midi.Soundbank;
+import javax.swing.*;
 
 public class ChatClient {
 
@@ -24,7 +25,6 @@ public class ChatClient {
     static private final CharsetDecoder decoder = charset.newDecoder();
     static private final ByteBuffer bufferIn = ByteBuffer.allocate(16384);
     static private final ByteBuffer bufferOut = ByteBuffer.allocate(16384);
-    static private Socket serverSocket = null;
     static private SocketChannel sc = null;
 
     // Método a usar para acrescentar uma string à caixa de texto
@@ -33,7 +33,6 @@ public class ChatClient {
         chatArea.append(message);
     }
 
-    
     // Construtor
     public ChatClient(String server, int port) throws IOException {
 
@@ -69,11 +68,11 @@ public class ChatClient {
 
         // Se for necessário adicionar código de inicialização ao
         // construtor, deve ser colocado aqui
-        serverSocket = new Socket(server, port);
-        sc = serverSocket.getChannel();
+        sc = SocketChannel.open();
         sc.configureBlocking(false);
-    }
+        sc.connect(new InetSocketAddress(server, port));
 
+    }
 
     // Método invocado sempre que o utilizador insere uma mensagem
     // na caixa de entrada
@@ -89,26 +88,31 @@ public class ChatClient {
     public static void bufferWrite() throws IOException {
 
         while (bufferOut.hasRemaining()) {
-    
-          sc.write(bufferOut);
-    
-        }
-      }
 
-    
+            sc.write(bufferOut);
+
+        }
+    }
+
     // Método principal do objecto
     public void run() throws IOException {
         bufferIn.clear();
-        while(true){
-            while(bufferIn.hasRemaining()){
-                sc.read(bufferIn);
-                String response = decoder.decode(bufferIn).toString();
-                bufferIn.clear();
-                printMessage(response + "\n");
+        while (true) {
+            System.out.println("1");
+            while (!sc.finishConnect()) {
+                System.out.println("2");
+                while (sc.read(bufferIn) > 0) {
+                    System.out.println("3");
+                    bufferIn.flip();
+                    String response = decoder.decode(bufferIn).toString();
+                    bufferIn.clear();
+                    printMessage(response + "\n");
+                    System.out.println(response);
+                }
             }
         }
+
     }
-    
 
     // Instancia o ChatClient e arranca-o invocando o seu método run()
     // * NÃO MODIFICAR *
